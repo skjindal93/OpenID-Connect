@@ -1,0 +1,21 @@
+1)HMAC function in DJS requires message to be string. W3C Web Cypto API asks it to be ArrayBuffer.
+	Work Around: Convert ArrayBuffer to String and pass it to the HMAC function of the DJS.
+
+2)Generate Key in HMAC:
+	Otherwise, if the length member of normalizedAlgorithm is non-zero?? Non-Zero or Just Positive.
+
+3)Key interface: Where does the data of key goes?
+	Work Around: Introduce a new attribute data in key interface.
+
+4)Generate Key in HMAC:
+	Let algorithm be a new HmacKeyAlgorithm.
+	Set the name attribute of algorithm to "HMAC".
+	--There is no name attribute in HmacKeyAlgorithm
+
+5)How to generate key using length attribute? Use some random function with some use of the length attribute.
+
+6) In sign menthod, do we also have to check whether the algorithm attribute of key is equal to the algorithm passed as an argument? i.e. if key.algorithm == algorithm, (Object comparison)
+
+7) Import Key : HMAC
+	Let data be the octet string contained in keyData.
+	--keyData is ArrayBuffer. What does it mean by octet string in keyData. Does it means to just convert the ArrayBuffer to String.

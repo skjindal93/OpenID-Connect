@@ -1,0 +1,79 @@
+<html>
+<head>
+	<script type="text/javascript" src="DJS/encoding.js"></script>
+	<script type="text/javascript" src="DJS/hashing.js"></script>
+	<script type="text/javascript" src="DJS/aes.js"></script>
+	<script type="text/javascript" src="DJS/rsa.js"></script>
+	<script type="text/javascript" src="functions.js"></script>
+	<script type="text/javascript" src="algorithms.js"></script>
+	<script type="text/javascript" src="Key.js"></script>
+	<script type="text/javascript" src="generateKey.js"></script>
+	<script type="text/javascript" src="sign.js"></script>
+	<script type="text/javascript" src="decrypt.js"></script>
+	<script type="text/javascript" src="encrypt.js"></script>
+	<script type="text/javascript" src="exportKey.js"></script>
+	<script type="text/javascript" src="importKey.js"></script>
+	<script type="text/javascript" src="verify.js"></script>
+	<script type="text/javascript" src="digest.js"></script>
+	<script type="text/javascript" src="deriveKey.js"></script>
+	<script type="text/javascript" src="wrapKey.js"></script>
+	<script type="text/javascript" src="unwrapKey.js"></script>
+	<script type="text/javascript" src="../chrome/resources/common.js"></script>
+	<script type="text/javascript" src="../chrome/resources/js-test.js"></script>
+	<script type="text/javascript" src="subtlecrypto.js"></script>
+	
+	<script type="text/javascript">
+	function init(){
+		
+		var start = new Date().getTime();
+		window.crypto = crypto;
+		var data = asciiToUint8Array("hello");
+		var iv = new Uint8Array(16);
+
+		function importKeyExcludingUsage(usage)
+		{
+		    var algorithm = {name: 'AES-CBC'};
+		    var extractable = false;
+		    var keyData = hexStringToUint8Array("2b7e151628aed2a6abf7158809cf4f3c");
+
+		    var usages = ["encrypt", "decrypt", "wrapKey", "unwrapKey"];
+		    for (var i in usages) {
+		        if (usages[i] == usage) {
+		            usages.splice(i, 1);
+		            break;
+		        }
+		    }
+
+		    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+		}
+
+		function testEncrypt()
+		{
+		    return importKeyExcludingUsage("encrypt").then(function(key) {
+		        return crypto.subtle.encrypt({name: 'AES-CBC', iv: iv}, key, data);
+		    }).then(failAndFinishJSTest, function(result) {
+
+		        logError(result);
+		    });
+		}
+
+		function testDecrypt()
+		{
+		    return importKeyExcludingUsage("decrypt").then(function(key) {
+		        return crypto.subtle.decrypt({name: 'AES-CBC', iv: iv}, key, data);
+		    }).then(failAndFinishJSTest, function(result) {
+		        logError(result);
+		    });
+		}
+
+		// FIXME: Add wrapKey() and unwrapKey()
+
+		testEncrypt().then(testDecrypt).then(finishJSTest, failAndFinishJSTest);
+
+	}
+	</script>
+</head>
+<body onload="init()">
+	
+</body>
+</html>

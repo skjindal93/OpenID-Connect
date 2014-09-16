@@ -1,0 +1,55 @@
+<html>
+<head>
+	<script type="text/javascript" src="DJS/encoding.js"></script>
+	<script type="text/javascript" src="DJS/hashing.js"></script>
+	<script type="text/javascript" src="DJS/aes.js"></script>
+	<script type="text/javascript" src="DJS/rsa.js"></script>
+	<script type="text/javascript" src="functions.js"></script>
+	<script type="text/javascript" src="algorithms.js"></script>
+	<script type="text/javascript" src="Key.js"></script>
+	<script type="text/javascript" src="generateKey.js"></script>
+	<script type="text/javascript" src="sign.js"></script>
+	<script type="text/javascript" src="decrypt.js"></script>
+	<script type="text/javascript" src="encrypt.js"></script>
+	<script type="text/javascript" src="exportKey.js"></script>
+	<script type="text/javascript" src="importKey.js"></script>
+	<script type="text/javascript" src="verify.js"></script>
+	<script type="text/javascript" src="digest.js"></script>
+	<script type="text/javascript" src="deriveKey.js"></script>
+	<script type="text/javascript" src="wrapKey.js"></script>
+	<script type="text/javascript" src="unwrapKey.js"></script>
+	<script type="text/javascript" src="../chrome/resources/common.js"></script>
+	<script type="text/javascript" src="../chrome/resources/js-test.js"></script>
+	<script type="text/javascript" src="subtlecrypto.js"></script>
+	
+	<script type="text/javascript">
+	function init(){
+		
+		var start = new Date().getTime();
+		window.crypto = crypto;
+		var keyData = hexStringToUint8Array("2b7e151628aed2a6abf7158809cf4f3c");
+		var data = asciiToUint8Array("hello");
+		var aesCbcKey = null;
+
+		Promise.resolve(null).then(function(result) {
+		    var usages = ['encrypt', 'decrypt'];
+		    var extractable = false;
+		    var algorithm = {name: 'AES-CBC'};
+
+		    return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+		}).then(function(result) {
+		    key = result;
+		    shouldEvaluateAs("key.algorithm.name", "AES-CBC");
+
+		    // Can't use an AES-KW key for AES-CBC (even though both are AES keys).
+		    return crypto.subtle.encrypt({name: 'AES-GCM', iv: new Uint8Array(16)}, key, data);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+		}).then(finishJSTest, failAndFinishJSTest);
+	}
+	</script>
+</head>
+<body onload="init()">
+	
+</body>
+</html>

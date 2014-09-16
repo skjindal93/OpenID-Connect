@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>OpenID Connect</title>
+	<script src="jquery.min.js"></script>
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+	<script type="text/javascript">
+		var code = '<%- code %>';
+		var info = '<%- info %>';
+		var response = '<%- response %>';
+		var idtoken = '<%- idtoken %>';
+		var tokenrequest = '<%- tokenrequest %>';
+		var authrequest = localStorage["auth-request"];
+		var userinfo = '<%- userinfo %>';
+		$(document).ready(function(){
+			//var code = JSON.parse(code);
+			//$(".code").html(syntaxHighlight(code));
+			$(".client-aep").html(authrequest);
+			$(".tep").html(syntaxHighlight(response));
+			$(".idtoken").html(syntaxHighlight(idtoken));
+			$(".client-uep").html(syntaxHighlight(userinfo));
+		});
+		
+		function syntaxHighlight(json) {
+		    if (typeof json != 'string') {
+		         json = JSON.stringify(json, undefined, 4);
+		    }
+		    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+		    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+		        var cls = 'number';
+		        if (/^"/.test(match)) {
+		            if (/:$/.test(match)) {
+		                cls = 'key';
+		            } else {
+		                cls = 'string';
+		            }
+		        } else if (/true|false/.test(match)) {
+		            cls = 'boolean';
+		        } else if (/null/.test(match)) {
+		            cls = 'null';
+		        }
+		        return '<span class="' + cls + '">' + match + '</span>';
+		    });
+		}
+
+	</script>
+</head>
+<body>
+	<div class="container">
+		<div class="page-header">
+	  		<h1>OpenID Connect<small></small></h1>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Client->Authorization End Point</strong></div>
+			<div class="panel-body">
+				<code class="client-aep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Authorization End Point->Client</strong></div>
+			<div class="panel-body">
+				<code class="aep">
+					'<%- code %>'
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Client->Token End Point</strong></div>
+			<div class="panel-body">
+				<code class="client-tep">
+					'<%- tokenrequest %>'
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Token End Point->Client</strong></div>
+			<div class="panel-body">
+				<code class="tep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>ID Token</strong></div>
+			<div class="panel-body">
+				<code class="idtoken">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Client->UserInfo End Point</strong></div>
+			<div class="panel-body">
+				<code class="client-uep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>UserInfo End Point->Client</strong></div>
+			<div class="panel-body">
+				<code class="uep">
+					'<%- info %>'
+				</code>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

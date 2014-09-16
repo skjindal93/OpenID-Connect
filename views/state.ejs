@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+<script type="text/javascript">
+	var fragmentURI = document.URL;
+	var URL={};
+	var state = '<%- state %>';
+	var code = '<%- code %>';
+	if (fragmentURI){
+		var uri = fragmentURI.split('?');
+		var uri = uri[1].split('&');
+		for (var i=0;i<uri.length;i++){
+			var p = uri[i].split("=");
+			URL[p[0]] = decodeURIComponent(p[1]);
+		}
+
+		if (localStorage["state"]==URL.state && code==URL.code){
+			var str="?";
+			for (var key in URL){
+				str=str + key +"="+URL[key]+"&";
+			}
+			str += "localresult=true";
+			console.log(str);
+			window.location = str;
+		}
+	}
+</script>
+</head>
+<body>
+
+</body>
+</html>

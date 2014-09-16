@@ -1,0 +1,8 @@
+aes-generateKey:
+	-keyUsage has [] bu according to W3C spec, [] is not allowed
+
+aes-key-algorithm-mismatch:
+	-What does it do?
+
+hmac-generateKey-parseAlgorithm-failures:
+	length: 5000000000 what should be the check in HMAC?

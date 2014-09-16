@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>OpenID Connect</title>
+
+<script src="jquery.min.js"></script>
+<script type="text/javascript" src="/DJCL/src/bn.js"></script>
+<script type="text/javascript" src="/DJCL/src/encoding.js"></script>
+<script type="text/javascript" src="/DJCL/src/djson.js"></script>
+<script type="text/javascript" src="/DJCL/src/utf8.js"></script>
+<script type="text/javascript" src="/DJCL/src/hashing.js"></script>
+<script type="text/javascript" src="/DJCL/src/aes.js"></script>
+<script type="text/javascript" src="/DJCL/src/rsa.js"></script>
+<script type="text/javascript" src="/DJCL/src/jose.js"></script>
+<script src="jquery.min.js"></script>
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<style type="text/css">
+	.cont{
+		display: none;
+	}
+</style>
+<script type="text/javascript">
+	var client_id = '<%- client_id %>';
+	var state = '<%- state %>';
+	var redirect_uri = '<%- redirect_uri %>';
+	var server_implicit = '<%- server_implicit %>';
+	//Check if localStorage is needed--IITD
+	localStorage["state"] = state;
+
+	var userinfo_end_point = '<%- userinfo_end_point %>';
+	//We can remove openif from the scope as it is required for OpenID Connect
+	var auth_request = {
+		scope : 'openid email profile',
+		client_id : client_id,
+		redirect_uri : redirect_uri,
+		state : state,
+	};
+
+	if (server_implicit == "implicit"){
+		//Implicit Flow
+		auth_request.response_type = 'token id_token';
+		var fragmentURI = window.location.hash;
+		var URL={};
+		if (fragmentURI){
+			var uri = fragmentURI.substr(1).split('&');
+			for (var i=0;i<uri.length;i++){
+				var p = uri[i].split("=");
+				URL[p[0]] = decodeURIComponent(p[1]);
+			}
+
+			if (state==URL.state && state==localStorage["state"]){
+				var access_token = URL.access_token;
+				var id_token = URL.id_token;
+				var valid = true;
+				$.ajax({
+					    url: "https://www.googleapis.com/oauth2/v2/certs",
+					    type: "GET",
+					    crossDomain: true,
+					    dataType: "jsonp",
+					    beforeSend: function(xhr){
+					        xhr.setRequestHeader("Access-Control-Allow-Origin","*");
+					    	//xhr.setRequestHeader("Authorization","Bearer "+access_token);
+					    },
+					    success: function(data) {
+					        var keys = data;
+					        keys = keys["keys"];
+							var idtoken = JWT.parse(id_token,keys[0]);
+							if (!idtoken.valid){
+								idtoken = JWT.parse(id_token,keys[1]);
+								if (!idtoken.valid){
+									valid = false;
+								}
+							}
+
+						if (valid){
+							var claims = JSON.parse(idtoken.claims);
+							if (claims["iss"]=="accounts.google.com" && claims["aud"] == client_id){
+								console.log("Success");
+								var header = {'Content-Type' : 'application/x-www-form-urlencoded','Authorization' : 'Bearer '+ access_token};
+								$.ajax({
+							         url: userinfo_end_point,
+							         type: "GET",
+							         beforeSend: function(xhr){
+							         	xhr.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+							         	xhr.setRequestHeader("Authorization","Bearer "+access_token);
+							         },
+							         success: function(data) {
+							         	$(".oauth-request").css("display","none");
+							         	$(".cont").css("display","block");	
+							         	$(".client-aep").html(localStorage["auth-request"]);
+							         	$(".aep").html(syntaxHighlight(URL));
+							         	$(".idtoken").html(syntaxHighlight(idtoken));
+							         	$(".client-uep").html(syntaxHighlight(header));
+							         	$(".uep").html(syntaxHighlight(data));
+							         }
+							    });
+							}
+						}
+					}
+				});
+			}
+			else {
+				console.log("State Not Matched");
+			}
+		}
+	}
+	else if (server_implicit == "server"){
+		//Server Flow (Auth Flow)
+		auth_request.response_type = 'code';	
+	}
+
+	$(document).ready(function(){
+		$(".oauth").submit(function(){
+			for (var key in auth_request){
+				$('<input />').attr('type','hidden')
+				.attr('name',key)
+				//.attr('value',encodeURIComponent(auth_request[key]))
+				.attr('value',(auth_request[key]))
+				.appendTo('.oauth');
+
+			}
+			localStorage["auth-request"] = JSON.stringify($(this).serializeArray());
+			return true;
+		});
+	});
+	function syntaxHighlight(json) {
+	    if (typeof json != 'string') {
+	         json = JSON.stringify(json, undefined, 4);
+	    }
+	    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	    return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+	        var cls = 'number';
+	        if (/^"/.test(match)) {
+	            if (/:$/.test(match)) {
+	                cls = 'key';
+	            } else {
+	                cls = 'string';
+	            }
+	        } else if (/true|false/.test(match)) {
+	            cls = 'boolean';
+	        } else if (/null/.test(match)) {
+	            cls = 'null';
+	        }
+	        return '<span class="' + cls + '">' + match + '</span>';
+	    });
+	}
+</script>
+</head>
+<body>
+
+<!--form class="oauth" action="/users" method="get"-->
+<div class="container">
+	<div class="page-header">
+  		<h1>OpenID Connect<small></small></h1>
+	</div>
+	<div class="cont">
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Client->Authorization End Point</strong></div>
+			<div class="panel-body">
+				<code class="client-aep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Authorization End Point->Client</strong></div>
+			<div class="panel-body">
+				<code class="aep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>ID Token</strong></div>
+			<div class="panel-body">
+				<code class="idtoken">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>Client->UserInfo End Point</strong></div>
+			<div class="panel-body">
+				<code class="client-uep">
+					
+				</code>
+			</div>
+		</div>
+		<div class="panel panel-default">
+			<div class="panel-heading"><strong>UserInfo End Point->Client</strong></div>
+			<div class="panel-body">
+				<code class="uep">
+					
+				</code>
+			</div>
+		</div>
+	</div>
+	<form class="oauth" action="<%- authorization_end_point %>" method="get">
+		<button type="submit" class="oauth-request">Sign in with Google</button>	
+	</form>
+</div>
+</body>
+</html>

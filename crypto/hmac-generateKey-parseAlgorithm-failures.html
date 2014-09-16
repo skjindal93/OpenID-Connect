@@ -1,0 +1,78 @@
+<html>
+<head>
+	<script type="text/javascript" src="DJS/encoding.js"></script>
+	<script type="text/javascript" src="DJS/hashing.js"></script>
+	<script type="text/javascript" src="DJS/aes.js"></script>
+	<script type="text/javascript" src="DJS/rsa.js"></script>
+	<script type="text/javascript" src="functions.js"></script>
+	<script type="text/javascript" src="algorithms.js"></script>
+	<script type="text/javascript" src="Key.js"></script>
+	<script type="text/javascript" src="generateKey.js"></script>
+	<script type="text/javascript" src="sign.js"></script>
+	<script type="text/javascript" src="decrypt.js"></script>
+	<script type="text/javascript" src="encrypt.js"></script>
+	<script type="text/javascript" src="exportKey.js"></script>
+	<script type="text/javascript" src="importKey.js"></script>
+	<script type="text/javascript" src="verify.js"></script>
+	<script type="text/javascript" src="digest.js"></script>
+	<script type="text/javascript" src="deriveKey.js"></script>
+	<script type="text/javascript" src="wrapKey.js"></script>
+	<script type="text/javascript" src="unwrapKey.js"></script>
+	<script type="text/javascript" src="../chrome/resources/common.js"></script>
+	<script type="text/javascript" src="../chrome/resources/js-test.js"></script>
+	<script type="text/javascript" src="subtlecrypto.js"></script>
+	
+	<script type="text/javascript">
+	function init(){
+		
+		var start = new Date().getTime();
+		window.crypto = crypto;
+			
+		extractable = true;
+		keyUsages = ['sign', 'verify'];
+
+		Promise.resolve(null).then(function() {
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: -3}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: ''}, length: 48}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: 5000000000}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: NaN}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: Infinity}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: -Infinity}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: crypto}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: undefined}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+
+		    return crypto.subtle.generateKey({name: 'HMAC', hash: {name: 'SHA-256'}, length: true}, extractable , keyUsages);
+		}).then(failAndFinishJSTest, function(result) {
+		    logError(result);
+		}).then(finishJSTest, failAndFinishJSTest);
+
+		}
+	</script>
+</head>
+<body onload="init()">
+	
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>OpenID Connect</title>
+	<script src="jquery.min.js"></script>
+	<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="bootstrap/css/bootstrap-theme.min.css">
+	<script src="bootstrap/js/bootstrap.min.js"></script>
+	<style type="text/css">
+	.implicit{
+		width:48%;
+		float: left;
+	}
+	.auth{
+		width:48%;
+		float: right;
+	}
+	img{
+		width: 100%;
+	}
+	</style>
+</head>
+<body>
+<div class="container">
+	<div class="page-header">
+		<h1>OpenID Connect<small></small></h1>
+	</div>
+	<div class="panel panel-default">
+		<div class="panel-heading">
+			<h3 class="panel-title">Description</h3>
+		</div>
+		<div class="panel-body">
+			We have implemented <a href="http://openid.net/connect/">OpenID Connect</a> according to the <a href="http://openid.net/specs/openid-connect-core-1_0.html">specifications</a>. We have a client and a server for the OpenID Connect messages flows. Our client easily interops with Google's OpenID Connect Server too both with <a href="http://openid.net/specs/openid-connect-core-1_0.html#ImplicitFlowAuth">implicit flow</a> as well as <a href="http://openid.net/specs/openid-connect-core-1_0.html#CodeFlowAuth">authorization code flow</a>.
+			<br>
+			 The working of both the flows are explained in the snapshots below. Click on any of them to authenticate our client with Google's OpenID Connect Server and see the flow of messages.
+		</div>
+	</div>
+	<div class="implicit">
+		<h4>OpenID Connect Implicit Flow</h4>
+		(Click on the image to login with google and see the contents)
+		<a target="_blank" href="google-implicit"><img src="images/openid-connect-implicit.png"></img></a>
+	</div>
+	<div class="auth">
+		<h4>OpenID Connect Authorization Code Flow</h4>
+		(Click on the image to login with google and see the contents)
+		<a target="_blank" href="google-auth"><img src="images/openid-connect-basic.png"></img></a>
+	</div>
+	
+</div>
+</body>
+</html>

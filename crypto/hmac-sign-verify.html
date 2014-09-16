@@ -1,0 +1,115 @@
+<html>
+<head>
+	<script type="text/javascript" src="DJS/encoding.js"></script>
+	<script type="text/javascript" src="DJS/hashing.js"></script>
+	<script type="text/javascript" src="DJS/aes.js"></script>
+	<script type="text/javascript" src="DJS/rsa.js"></script>
+	<script type="text/javascript" src="functions.js"></script>
+	<script type="text/javascript" src="algorithms.js"></script>
+	<script type="text/javascript" src="Key.js"></script>
+	<script type="text/javascript" src="generateKey.js"></script>
+	<script type="text/javascript" src="sign.js"></script>
+	<script type="text/javascript" src="decrypt.js"></script>
+	<script type="text/javascript" src="encrypt.js"></script>
+	<script type="text/javascript" src="exportKey.js"></script>
+	<script type="text/javascript" src="importKey.js"></script>
+	<script type="text/javascript" src="verify.js"></script>
+	<script type="text/javascript" src="digest.js"></script>
+	<script type="text/javascript" src="deriveKey.js"></script>
+	<script type="text/javascript" src="wrapKey.js"></script>
+	<script type="text/javascript" src="unwrapKey.js"></script>
+	<script type="text/javascript" src="../chrome/resources/common.js"></script>
+	<script type="text/javascript" src="../chrome/resources/js-test.js"></script>
+	<script type="text/javascript" src="subtlecrypto.js"></script>
+	
+	<script type="text/javascript">
+	function init(){
+		
+		var start = new Date().getTime();
+		window.crypto = crypto;
+		var kHmacTestVectors = [
+			// Empty sets.  Result generated via OpenSSL commandline tool.  These
+			// particular results are also posted on the Wikipedia page examples:
+			// http://en.wikipedia.org/wiki/Hash-based_message_authentication_code
+			{
+				hash: "SHA-256",
+				key: "",
+				message: "",
+				// openssl dgst -sha256 -hmac "" < /dev/null
+				mac: "b613679a0814d9ec772f95d778c35fc5ff1697c493715653c6c712144292c5ad",
+			},
+			// L=20 set 45
+			// L=32, set 30
+			{
+				hash: "SHA-256",
+				key: "9779d9120642797f1747025d5b22b7ac607cab08e1758f2f3a46c8be1e25c53b8c6a8f58ffefa176",
+				message: "b1689c2591eaf3c9e66070f8a77954ffb81749f1b00346f9dfe0b2ee905dcc288baf4a92de3f4001dd9f44c468c3d07d6c6ee82faceafc97c2fc0fc0601719d2dcd0aa2aec92d1b0ae933c65eb06a03c9c935c2bad0459810241347ab87e9f11adb30415424c6c7f5f22a003b8ab8de54f6ded0e3ab9245fa79568451dfa258e",
+				mac: "769f00d3e6a6cc1fb426a14a4f76c6462e6149726e0dee0ec0cf97a16605ac8b",
+			},
+			// L=32, set 224
+			{
+				hash: "SHA-256",
+				key: "4b7ab133efe99e02fc89a28409ee187d579e774f4cba6fc223e13504e3511bef8d4f638b9aca55d4a43b8fbd64cf9d74dcc8c9e8d52034898c70264ea911a3fd70813fa73b083371289b",
+				message: "138efc832c64513d11b9873c6fd4d8a65dbf367092a826ddd587d141b401580b798c69025ad510cff05fcfbceb6cf0bb03201aaa32e423d5200925bddfadd418d8e30e18050eb4f0618eb9959d9f78c1157d4b3e02cd5961f138afd57459939917d9144c95d8e6a94c8f6d4eef3418c17b1ef0b46c2a7188305d9811dccb3d99",
+				mac: "4f1ee7cb36c58803a8721d4ac8c4cf8cae5d8832392eed2a96dc59694252801b",
+			}
+			];
+
+			function runTest(testCase)
+			{
+			var importAlgorithm = {name: 'HMAC', hash: {name: testCase.hash}};
+			var algorithm = {name: 'HMAC'};
+
+			var key = null;
+			var keyData = hexStringToUint8Array(testCase.key);
+			var usages = ['sign', 'verify'];
+			var extractable = false;
+
+			// (1) Import the key
+			return crypto.subtle.importKey('raw', keyData, importAlgorithm, extractable, usages).then(function(result) {
+			    key = result;
+			    
+			    // shouldBe() can only resolve variables in global context.
+			    tmpKey = key;
+			    shouldEvaluateAs("tmpKey.type", "secret");
+			    shouldEvaluateAs("tmpKey.extractable", false);
+			    shouldEvaluateAs("tmpKey.algorithm.name", "HMAC");
+			    shouldEvaluateAs("tmpKey.algorithm.hash.name", testCase.hash);
+			    //shouldEvaluateAs("tmpKey.algorithm.length", keyData.length * 8);
+			    shouldEvaluateAs("tmpKey.usages.join(',')", "sign,verify");
+
+			    // (2) Sign.
+			    return crypto.subtle.sign(algorithm, key, hexStringToUint8Array(testCase.message));
+			}).then(function(result) {
+			    bytesShouldMatchHexString("Mac", testCase.mac, result);
+
+			    // (3) Verify
+			    return crypto.subtle.verify(algorithm, key, hexStringToUint8Array(testCase.mac), hexStringToUint8Array(testCase.message));
+			}).then(function(result) {
+			    verifyResult = result;
+			    shouldBe("verifyResult", "true");
+
+			    // (4) Verify truncated mac (by stripping 1 byte off of it).
+			    var expectedMac = hexStringToUint8Array(testCase.mac);
+			    return crypto.subtle.verify(algorithm, key, expectedMac.subarray(0, expectedMac.byteLength - 1), hexStringToUint8Array(testCase.message));
+			}).then(function(result) {
+			    verifyResult = result;
+			    shouldBe("verifyResult", "false");
+			});
+			}
+
+			var lastPromise = Promise.resolve(null);
+
+			kHmacTestVectors.forEach(function(testCase) {
+			lastPromise = lastPromise.then(runTest.bind(null, testCase));
+			});
+
+			lastPromise.then(finishJSTest, failAndFinishJSTest);
+
+	}
+	</script>
+</head>
+<body onload="init()">
+	
+</body>
+</html>

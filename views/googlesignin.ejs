@@ -1,0 +1,47 @@
+<meta name="google-signin-clientid" content="795335440895-0sgl7rjojolobbll0l64b7sia7lodib4.apps.googleusercontent.com" />
+<meta name="google-signin-scope" content="https://www.googleapis.com/auth/plus.login" />
+<meta name="google-signin-requestvisibleactions" content="http://schema.org/AddAction" />
+<meta name="google-signin-cookiepolicy" content="single_host_origin" />
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+
+<script type="text/javascript">
+
+	(function() {
+		var po = document.createElement('script'); 
+		po.type = 'text/javascript'; po.async = true;
+		po.src = 'https://apis.google.com/js/client:plusone.js?onload=render';
+		var s = document.getElementsByTagName('script')[0]; 
+		s.parentNode.insertBefore(po, s);
+	})();
+
+	function render() {
+		// Additional params including the callback, the rest of the params will
+		// come from the page-level configuration.
+		var additionalParams = {
+			'callback': signinCallback
+		};
+		// Attach a click listener to a button to trigger the flow.
+		var signinButton = document.getElementById('signinButton');
+		signinButton.addEventListener('click', function() {
+			gapi.auth.signIn(additionalParams); // Will use page level configuration
+		});
+	}
+	function signinCallback(authResult) {
+		if (authResult['status']['signed_in']) {
+			console.log(authResult);
+			// Update the app to reflect a signed in user
+			// Hide the sign-in button now that the user is authorized, for example:
+			document.getElementById('signinButton').setAttribute('style', 'display: none');
+		} else {
+		// Update the app to reflect a signed out user
+		// Possible error values:
+		//   "user_signed_out" - User is signed-out
+		//   "access_denied" - User denied access to your app
+		//   "immediate_failed" - Could not automatically log in the user
+			console.log('Sign-in state: ' + authResult['error']);
+		}
+	}
+</script>
+<body>
+	<button id="signinButton">Sign in with Google</button>
+</body>

@@ -1,0 +1,87 @@
+
+<html>
+<head>
+    <script type="text/javascript" src="DJS/encoding.js"></script>
+    <script type="text/javascript" src="DJS/hashing.js"></script>
+    <script type="text/javascript" src="DJS/aes.js"></script>
+    <script type="text/javascript" src="DJS/rsa.js"></script>
+    <script type="text/javascript" src="functions.js"></script>
+    <script type="text/javascript" src="algorithms.js"></script>
+    <script type="text/javascript" src="Key.js"></script>
+    <script type="text/javascript" src="generateKey.js"></script>
+    <script type="text/javascript" src="sign.js"></script>
+    <script type="text/javascript" src="decrypt.js"></script>
+    <script type="text/javascript" src="encrypt.js"></script>
+    <script type="text/javascript" src="exportKey.js"></script>
+    <script type="text/javascript" src="importKey.js"></script>
+    <script type="text/javascript" src="verify.js"></script>
+    <script type="text/javascript" src="digest.js"></script>
+    <script type="text/javascript" src="deriveKey.js"></script>
+    <script type="text/javascript" src="wrapKey.js"></script>
+    <script type="text/javascript" src="unwrapKey.js"></script>
+    <script type="text/javascript" src="../chrome/resources/common.js"></script>
+    <script type="text/javascript" src="../chrome/resources/js-test.js"></script>
+    <script type="text/javascript" src="subtlecrypto.js"></script>
+    
+    <script type="text/javascript">
+    function init(){
+        
+        var start = new Date().getTime();
+        window.crypto = crypto;
+        // FIXME: Should also test unextractable keys created from generateKey().
+
+        function importUnextractableAesKey()
+        {
+            var keyData = new Uint8Array(16);
+            var usages = ['encrypt'];
+            var extractable = false;
+            var algorithm = {name: 'AES-CBC'};
+
+            return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+        }
+
+        function importUnextractableHmacKey()
+        {
+            var keyData = new Uint8Array(16);
+            var usages = ['sign'];
+            var extractable = false;
+            var algorithm = {name: 'HMAC', hash: {name: 'SHA-1'}};
+
+            return crypto.subtle.importKey('raw', keyData, algorithm, extractable, usages);
+        }
+
+        function importUnextractableRsaPrivateKey()
+        {
+            var keyData = hexStringToUint8Array(keyData.rsa1.pkcs8);
+            var usages = ['sign'];
+            var extractable = false;
+            var algorithm = {name: 'RSASSA-PKCS1-v1_5', hash: {name: "SHA-1"}};
+
+            return crypto.subtle.importKey('pkcs8', keyData, algorithm, extractable, usages);
+        }
+
+        importUnextractableAesKey().then(function(key) {
+            return crypto.subtle.exportKey('raw', key);
+        }).then(failAndFinishJSTest, function(result) {
+            logError(result);
+
+            return importUnextractableHmacKey();
+        }).then(function(key) {
+            return crypto.subtle.exportKey('raw', key);
+        }).then(failAndFinishJSTest, function(result) {
+            logError(result);
+
+            return importUnextractableRsaPrivateKey();
+        }).then(function(key) {
+            return crypto.subtle.exportKey('pkcs8', key);
+        }).then(failAndFinishJSTest, function(result) {
+            logError(result);
+        }).then(finishJSTest, failAndFinishJSTest);
+
+        }
+    </script>
+</head>
+<body onload="init()">
+    
+</body>
+</html>
